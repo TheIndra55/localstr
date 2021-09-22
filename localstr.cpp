@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 {
 	if (argc == 1)
 	{
-		std::cout << "Usage: localstr.exe [locals.bin]" << std::endl;
+		std::cout << ERROR_PREFIX << "Usage: localstr.exe [locals.bin]" << std::endl;
 		return 1;
 	}
 
@@ -15,25 +15,17 @@ int main(int argc, char* argv[])
 
 	if (!file.good())
 	{
-		std::cout << "Failed to open locale file " << strerror(errno) << std::endl;
+		std::cout << ERROR_PREFIX << "Failed to open locale file: " << strerror(errno) << std::endl;
 		return 1;
 	}
 
-	// read the lang
-	language lang;
-	file.read((char*)&lang, sizeof(int));
+	LocalizationHeader header;
+	file.read((char*)&header, sizeof(LocalizationHeader));
 
-	// read the len
-	int len;
-	file.read((char*)&len, sizeof(int));
+	std::cout << "File has " << header.numStrings << " strings" << std::endl;
+	std::cout << "Language is " << header.language << std::endl;
 
-	int numStrings = len / 4;
-	std::cout << "File has " << numStrings << " strings" << std::endl;
-	std::cout << "Language is " << lang << std::endl;
-
-	// seek to offset 12 and start reading
-	file.seekg(12);
-	for (int i = 0; i < numStrings; i++)
+	for (int i = 0; i < header.numStrings; i++)
 	{
 		// read the offset of the string
 		int offset;
@@ -47,7 +39,7 @@ int main(int argc, char* argv[])
 		std::string str;
 		std::getline(file, str, '\0');
 
-		std::cout << i << " " << str << std::endl;
+		std::cout << i << "		" << str << std::endl;
 
 		// return to old cursor
 		file.seekg(cursor);
