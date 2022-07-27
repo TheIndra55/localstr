@@ -1,3 +1,2 @@
-*.exe
-*.obj
-locals.bin
+bin/
+obj/
