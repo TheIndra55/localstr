@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Encodings.Web;
 
 if (args.Length == 0)
 {
@@ -18,7 +19,12 @@ switch(Path.GetExtension(file))
             // write to json
             var outputFile = Path.GetFileNameWithoutExtension(file) + ".json";
 
-            File.WriteAllText(outputFile, JsonSerializer.Serialize(localsFile, new JsonSerializerOptions { WriteIndented = true }));
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            File.WriteAllText(outputFile, JsonSerializer.Serialize(localsFile, options));
 
             Console.WriteLine("File written to " + Path.GetFileName(outputFile));
         }
@@ -27,6 +33,7 @@ switch(Path.GetExtension(file))
         {
             // open our json definition of locals.bin
             var content = File.ReadAllBytes(file);
+
             var localsFile = JsonSerializer.Deserialize<LocalizationFile>(content);
 
             if (localsFile.Strings[0].Length > 0)
@@ -37,7 +44,7 @@ switch(Path.GetExtension(file))
 
             // open output file
             var outputFile = Path.GetFileNameWithoutExtension(file) + ".bin";
-            var stream = File.Open(outputFile, FileMode.Truncate);
+            var stream = File.Open(outputFile, FileMode.Create);
 
             // write back to locals.bin in game format
             localsFile.ToFile(stream);
