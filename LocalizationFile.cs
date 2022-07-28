@@ -74,6 +74,13 @@ class LocalizationFile
         for (var i = 0; i < numStrings; i++)
         {
             var offset = reader.ReadUInt32();
+
+            if (offset == 0)
+            {
+                localsFile.AddString(string.Empty);
+                continue;
+            }
+
             var cursor = reader.BaseStream.Position;
 
             // seek to string and read it
