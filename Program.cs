@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 if (args.Length < 2)
 {
     Console.WriteLine("Usage: localstr [game] [input file]");
-    return;
+    return 1;
 }
 
 var game = args[0];
@@ -19,7 +19,7 @@ var games = new Dictionary<string, Type>
 if (!games.ContainsKey(game))
 {
     Console.WriteLine("Invalid game, must be: " + string.Join(", ", games.Keys));
-    return;
+    return 1;
 }
 
 var type = games[game];
@@ -57,7 +57,7 @@ switch(Path.GetExtension(file))
             if (localsFile.Strings[0].Length > 0)
             {
                 Console.WriteLine("First string should be empty");
-                return;
+                return 1;
             }
 
             // open output file
@@ -73,5 +73,8 @@ switch(Path.GetExtension(file))
         break;
     default:
         Console.WriteLine("Cannot open this file, must be a .bin or .json");
-        break;
+
+        return 1;
 }
+
+return 0;
