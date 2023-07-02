@@ -1,20 +1,38 @@
 ﻿using System.Text.Json;
 using System.Text.Encodings.Web;
 
-if (args.Length == 0)
+if (args.Length < 2)
 {
-    Console.WriteLine("Usage: localstr locals.bin/locals.json");
+    Console.WriteLine("Usage: localstr [game] [input file]");
     return;
 }
 
-var file = args[0];
+var game = args[0];
+var file = args[1];
+
+var games = new Dictionary<string, Type>
+{
+    { "legend", typeof(LegendLocalizationFile) },
+    { "rise", typeof(RiseLocalizationFile) }
+};
+
+if (!games.ContainsKey(game))
+{
+    Console.WriteLine("Invalid game, must be: " + string.Join(", ", games.Keys));
+    return;
+}
+
+var type = games[game];
 
 switch(Path.GetExtension(file))
 {
     case ".bin":
         {
             // parse the localization file
-            var localsFile = LocalizationFile.FromFile(file);
+            var localsFile = (ILocalizationFile)Activator.CreateInstance(type);
+
+            var stream = File.OpenRead(file);
+            localsFile.FromFile(stream);
 
             // write to json
             var outputFile = Path.GetFileNameWithoutExtension(file) + ".json";
@@ -24,7 +42,7 @@ switch(Path.GetExtension(file))
                 WriteIndented = true,
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
-            File.WriteAllText(outputFile, JsonSerializer.Serialize(localsFile, options));
+            File.WriteAllText(outputFile, JsonSerializer.Serialize(localsFile, type, options));
 
             Console.WriteLine("File written to " + Path.GetFileName(outputFile));
         }
@@ -34,7 +52,7 @@ switch(Path.GetExtension(file))
             // open our json definition of locals.bin
             var content = File.ReadAllBytes(file);
 
-            var localsFile = JsonSerializer.Deserialize<LocalizationFile>(content);
+            var localsFile = (ILocalizationFile)JsonSerializer.Deserialize(content, type);
 
             if (localsFile.Strings[0].Length > 0)
             {
