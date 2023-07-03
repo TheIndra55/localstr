@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Encodings.Web;
+using LocalStr.Games;
 
 if (args.Length < 2)
 {
@@ -13,6 +14,7 @@ var file = args[1];
 var games = new Dictionary<string, Type>
 {
     { "legend", typeof(LegendLocalizationFile) },
+    { "ascension", typeof(AscensionLocalizationFile) },
     { "rise", typeof(RiseLocalizationFile) }
 };
 
